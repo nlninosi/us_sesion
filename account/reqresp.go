@@ -4,6 +4,8 @@ import (
 	"context"
 	"encoding/json"
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 type (
@@ -78,14 +80,13 @@ func decodeUserReq(ctx context.Context, r *http.Request) (interface{}, error) {
 // Crea la interface a partir de la respuesta del servidor
 func decodeEmailReq(ctx context.Context, r *http.Request) (interface{}, error) {
 	var req GetUserRequest
+	vars := mux.Vars(r)
 
-	err := json.NewDecoder(r.Body).Decode(&req)
-	if err != nil {
-		return nil, err
+	req = GetUserRequest{
+		Id: vars["id"],
 	}
 	return req, nil
 }
-
 func decodeValidateReq(ctx context.Context, r *http.Request) (interface{}, error) {
 	var req ValidateUserRequest
 	err := json.NewDecoder(r.Body).Decode(&req)

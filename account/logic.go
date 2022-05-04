@@ -119,7 +119,7 @@ func (s service) ValidateToken(ctx context.Context, email string, token string) 
 			newToken, err := getSignedToken()
 			if err != nil {
 				level.Error(logger).Log("err", err)
-				return "", err
+				return "not valid token", err
 			}
 			ok, err := s.repository.UpdateToken(ctx, email, newToken)
 			if err != nil {
