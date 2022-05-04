@@ -121,7 +121,7 @@ func (s service) ValidateToken(ctx context.Context, email string, token string) 
 				level.Error(logger).Log("err", err)
 				return "", err
 			}
-			ok, err := s.repository.UpdateToken(ctx, email, token)
+			ok, err := s.repository.UpdateToken(ctx, email, newToken)
 			if err != nil {
 				level.Error(logger).Log("err", err)
 				return ok, err
