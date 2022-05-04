@@ -33,7 +33,7 @@ const (
 
 func main() {
 
-	var httpAddr = flag.String("http", ":8081", "http listen address")
+	var httpAddr = flag.String("http", ":4001", "http listen address")
 	var logger log.Logger
 	{
 		logger = log.NewLogfmtLogger(os.Stderr)
