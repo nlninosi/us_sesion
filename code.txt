@@ -1,0 +1,12 @@
+CREATE TABLE public.users (
+	id varchar NULL,
+	email varchar NULL,
+	"password" varchar NULL,
+	status varchar NULL,
+	username varchar NULL,
+	"token" varchar NULL
+);
+
+docker run --name us_sesion_db --network=test -p 5432:5432 -e POSTGRES_PASSWORD=mysecretpassword -d postgres
+docker build -t us_sesion_ms .
+docker run --name us_sesion_ms -p 80:8081 -d us_sesion_ms
