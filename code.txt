@@ -10,3 +10,14 @@ CREATE TABLE public.users (
 docker run --name us_sesion_db --network=test -p 5432:5432 -e POSTGRES_PASSWORD=mysecretpassword -d postgres
 docker build -t us_sesion_ms .
 docker run --name us_sesion_ms -p 80:8081 -d us_sesion_ms
+
+docker build -t gcr.io/shining-wharf-349304-id1/us-sesion
+docker push gcr.io/shining-wharf-349304/us-sesion
+project id: us-sesion-id1
+project name: us-sesion
+{
+    "email":"a@a",
+    "password":"123",
+    "status":"1",
+    "usename":"aa"
+}

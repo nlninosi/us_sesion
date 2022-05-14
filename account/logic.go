@@ -143,7 +143,7 @@ func (s service) NewPassword(ctx context.Context, email string, password string,
 
 	if err != nil {
 		level.Error(logger).Log("err", err)
-		return "", err
+		return "BadRequest", err
 	}
 
 	//logger.Log("Get user", id)

@@ -95,7 +95,7 @@ func (repo *repo) NewPassword(ctx context.Context, email string, newpassword str
 
 	_, err := repo.db.ExecContext(ctx, "UPDATE users SET password = $1 WHERE email=$2", newpassword, email)
 	if err != nil {
-		return "", nil
+		return "BadRequest", nil
 	}
 
 	return "password changed", nil
