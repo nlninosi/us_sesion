@@ -22,12 +22,20 @@ type (
 	GetUserRequest struct {
 		Id string `json:"id"`
 	}
+	GetUsersRequest struct {
+	}
 	GetUserResponse struct {
 		Email    string `json:"email"`
 		Status   string `json:"status"`
 		UserName string `json:"username"`
 	}
-
+	GetUsersResponse struct {
+		UserName1 string `json:"username1"`
+		UserName2 string `json:"username2"`
+		UserName3 string `json:"username3"`
+		UserName4 string `json:"username4"`
+		UserName5 string `json:"username5"`
+	}
 	ValidateUserRequest struct {
 		Email    string `json:"email"`
 		Password string `json:"password"`
@@ -85,6 +93,10 @@ func decodeEmailReq(ctx context.Context, r *http.Request) (interface{}, error) {
 	req = GetUserRequest{
 		Id: vars["id"],
 	}
+	return req, nil
+}
+func decodeUsersReq(ctx context.Context, r *http.Request) (interface{}, error) {
+	var req GetUsersRequest = GetUsersRequest{}
 	return req, nil
 }
 func decodeValidateReq(ctx context.Context, r *http.Request) (interface{}, error) {

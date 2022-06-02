@@ -78,6 +78,34 @@ func (repo *repo) GetUser(ctx context.Context, id string) (string, string, strin
 	return email, status, username, nil
 }
 
+func (repo *repo) GetUsers(ctx context.Context) ([5]string, error) {
+	var t1Err = errors.New("unable to handle Repository Request at GetUsers")
+	//var t2Err = errors.New("unable to handle Repository Request")
+	var usernames [5]string
+	err := repo.db.QueryRow("SELECT username FROM users order by random() limit 1").Scan(&usernames[0])
+	if err != nil {
+		return usernames, t1Err
+	}
+	err1 := repo.db.QueryRow("SELECT username FROM users order by random() limit 1").Scan(&usernames[1])
+	if err1 != nil {
+		return usernames, t1Err
+	}
+	err2 := repo.db.QueryRow("SELECT username FROM users order by random() limit 1").Scan(&usernames[2])
+	if err2 != nil {
+		return usernames, t1Err
+	}
+	err3 := repo.db.QueryRow("SELECT username FROM users order by random() limit 1").Scan(&usernames[3])
+	if err3 != nil {
+		return usernames, t1Err
+	}
+	err4 := repo.db.QueryRow("SELECT username FROM users order by random() limit 1").Scan(&usernames[4])
+	if err4 != nil {
+		return usernames, t1Err
+	}
+
+	return usernames, nil
+}
+
 // Aqui obtenemos la contrase;a
 // metodo inseguro
 // implementar hashes

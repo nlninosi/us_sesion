@@ -73,6 +73,18 @@ func (s service) GetUser(ctx context.Context, id string) (string, string, string
 
 	return email, status, username, nil
 }
+func (s service) GetUsers(ctx context.Context) (string, string, string, string, string, error) {
+	logger := log.With(s.logger, "method", "GetUsers")
+
+	usernames, err := s.repository.GetUsers(ctx)
+
+	if err != nil {
+		level.Error(logger).Log("err", err)
+		return "", "", "", "", "", err
+	}
+
+	return usernames[0], usernames[1], usernames[2], usernames[3], usernames[4], nil
+}
 
 func (s service) ValidateUser(ctx context.Context, email string, password string) (string, error) {
 	logger := log.With(s.logger, "method", "ValidateUser")

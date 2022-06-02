@@ -10,6 +10,7 @@ import (
 type Endpoints struct {
 	CreateUser    endpoint.Endpoint
 	GetUser       endpoint.Endpoint
+	GetUsers      endpoint.Endpoint
 	ValidateUser  endpoint.Endpoint
 	ValidateToken endpoint.Endpoint
 	Close         endpoint.Endpoint
@@ -20,6 +21,7 @@ func MakeEndpoints(s Service) Endpoints {
 	return Endpoints{
 		CreateUser:    makeCreateUserEndpoint(s),
 		GetUser:       makeGetUserEndpoint(s),
+		GetUsers:      makeGetUsersEndpoint(s),
 		ValidateUser:  makeValidateUserEndpoint(s),
 		ValidateToken: makeValidateTokenEndpoint(s),
 		Close:         makeCloseEndpoint(s),
@@ -46,7 +48,14 @@ func makeGetUserEndpoint(s Service) endpoint.Endpoint {
 		}, err
 	}
 }
-
+func makeGetUsersEndpoint(s Service) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		username1, username2, username3, username4, username5, err := s.GetUsers(ctx)
+		return GetUsersResponse{
+			UserName1: username1, UserName2: username2, UserName3: username3, UserName4: username4, UserName5: username5,
+		}, err
+	}
+}
 func makeValidateUserEndpoint(s Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		req := request.(ValidateUserRequest)
