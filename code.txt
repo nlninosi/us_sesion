@@ -11,3 +11,4 @@ CREATE TABLE public.users (
 docker run --name us_sesion_db --network=test -p 5432:5432 -e POSTGRES_PASSWORD=mysecretpassword -d postgres
 docker build -t us_sesion_ms .
 docker run --name us_sesion_ms --network=test -p 4001:4001 -d us_sesion_ms
+docker-compose up
