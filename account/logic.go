@@ -109,7 +109,7 @@ func (s service) ValidateUser(ctx context.Context, email string, password string
 		}
 		return tokenString, nil
 	} else {
-		return "BadRequest", nil
+		return "Incorrect Password", nil
 	}
 }
 
@@ -125,7 +125,7 @@ func (s service) ValidateToken(ctx context.Context, email string, token string) 
 		oldToken, err := s.repository.ValidateToken(ctx, email)
 		if err != nil {
 			level.Error(logger).Log("err", err)
-			return "badrequest", err
+			return "Invalid Token", err
 		}
 		if token == oldToken {
 			newToken, err := getSignedToken()
@@ -149,7 +149,7 @@ func (s service) ValidateToken(ctx context.Context, email string, token string) 
 func (s service) NewPassword(ctx context.Context, email string, password string, repassword string) (string, error) {
 	logger := log.With(s.logger, "method", "GetUser")
 	if repassword != password {
-		return "BadRequest", nil
+		return "Passwords dont match", nil
 	}
 	ok, err := s.repository.NewPassword(ctx, email, password)
 

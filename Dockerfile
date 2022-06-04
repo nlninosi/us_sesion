@@ -8,6 +8,6 @@ RUN go mod download && go mod verify
 
 COPY . .
 RUN go build -v -o /usr/local/bin/us_sesion_ms
-EXPOSE 8081
+EXPOSE 4001
 
 CMD ["us_sesion_ms"]
