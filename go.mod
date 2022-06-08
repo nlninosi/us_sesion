@@ -7,6 +7,9 @@ require (
 	github.com/gofrs/uuid v3.2.0+incompatible
 	github.com/gorilla/mux v1.7.3
 	github.com/lib/pq v1.10.5
+	github.com/shaj13/go-guardian v1.5.11
+	gopkg.in/asn1-ber.v1 v1.0.0-20181015200546-f715ec2f112d // indirect
+	gopkg.in/ldap.v3 v3.1.0 // indirect
 )
 
 require (

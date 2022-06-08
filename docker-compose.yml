@@ -7,8 +7,8 @@ services:
     environment:
       COMPOSE_HTTP_TIMEOUT: 200 #segundos que se permite docker-compose para considerarse fallida
       LDAP_LOG_LEVEL: "256"
-      LDAP_ORGANISATION: "UN Stream"
-      LDAP_DOMAIN: "unstream.com"
+      LDAP_ORGANISATION: "Software Architecture"
+      LDAP_DOMAIN: "arqsoft.unal.edu.co"
       LDAP_BASE_DN: ""
       LDAP_ADMIN_PASSWORD: "admin"
       LDAP_CONFIG_PASSWORD: "config"
@@ -70,4 +70,8 @@ services:
       POSTGRES_PASSWORD: mysecretpassword
       POSTGRES_DB: postgres
     volumes:
-      - ./init.sql:/docker-entrypoint-initdb.d/
+      - ./docker_postgres_init.sql:/docker-entrypoint-initdb.d/docker_postgres_init.sql
+networks:
+    default:
+        external:
+            name: test  
