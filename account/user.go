@@ -21,6 +21,7 @@ type User struct {
 type Repository interface {
 	CreateUser(ctx context.Context, user User) error
 	GetUser(ctx context.Context, id string) (string, string, string, error)
+	GetId(ctx context.Context, username string) (string, error)
 	GetUsers(ctx context.Context) ([5]string, error)
 	ValidateUser(ctx context.Context, email string) (string, error)
 	NewPassword(ctx context.Context, email string, newpassword string) (string, error)

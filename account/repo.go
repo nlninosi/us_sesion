@@ -78,6 +78,16 @@ func (repo *repo) GetUser(ctx context.Context, id string) (string, string, strin
 	return email, status, username, nil
 }
 
+func (repo *repo) GetId(ctx context.Context, username string) (string, error) {
+	var userid string
+	err1 := repo.db.QueryRow("SELECT id FROM users WHERE username=$1", username).Scan(&userid)
+	if err1 != nil {
+		return "", RepoErr
+	}
+
+	return userid, nil
+}
+
 func (repo *repo) GetUsers(ctx context.Context) ([5]string, error) {
 	var t1Err = errors.New("unable to handle Repository Request at GetUsers")
 	//var t2Err = errors.New("unable to handle Repository Request")

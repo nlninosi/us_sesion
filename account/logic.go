@@ -73,6 +73,22 @@ func (s service) GetUser(ctx context.Context, id string) (string, string, string
 
 	return email, status, username, nil
 }
+
+func (s service) GetId(ctx context.Context, username string) (string, error) {
+	logger := log.With(s.logger, "method", "GetId")
+
+	id, err := s.repository.GetId(ctx, username)
+
+	if err != nil {
+		level.Error(logger).Log("err", err)
+		return "", err
+	}
+
+	logger.Log("Get id", id)
+
+	return id, nil
+}
+
 func (s service) GetUsers(ctx context.Context) (string, string, string, string, string, error) {
 	logger := log.With(s.logger, "method", "GetUsers")
 

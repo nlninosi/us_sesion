@@ -15,6 +15,7 @@ type Endpoints struct {
 	ValidateToken endpoint.Endpoint
 	Close         endpoint.Endpoint
 	NewPassword   endpoint.Endpoint
+	GetId         endpoint.Endpoint
 }
 
 func MakeEndpoints(s Service) Endpoints {
@@ -26,6 +27,7 @@ func MakeEndpoints(s Service) Endpoints {
 		ValidateToken: makeValidateTokenEndpoint(s),
 		Close:         makeCloseEndpoint(s),
 		NewPassword:   makeNewPasswordEndpoint(s),
+		GetId:         makeGetIdEndpoint(s),
 	}
 }
 
@@ -48,6 +50,18 @@ func makeGetUserEndpoint(s Service) endpoint.Endpoint {
 		}, err
 	}
 }
+
+func makeGetIdEndpoint(s Service) endpoint.Endpoint {
+	return func(ctx context.Context, request interface{}) (interface{}, error) {
+		req := request.(GetIdRequest)
+		id, err := s.GetId(ctx, req.UserName)
+
+		return GetIdResponse{
+			Id: id,
+		}, err
+	}
+}
+
 func makeGetUsersEndpoint(s Service) endpoint.Endpoint {
 	return func(ctx context.Context, request interface{}) (interface{}, error) {
 		username1, username2, username3, username4, username5, err := s.GetUsers(ctx)

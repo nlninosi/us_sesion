@@ -10,4 +10,5 @@ type Service interface {
 	ValidateToken(ctx context.Context, token string, email string) (string, error)
 	NewPassword(ctx context.Context, email string, password string, repassword string) (string, error)
 	CloseSesion(ctx context.Context, ok string) (string, error)
+	GetId(ctx context.Context, username string) (string, error)
 }

@@ -24,6 +24,9 @@ type (
 	}
 	GetUsersRequest struct {
 	}
+	GetIdRequest struct {
+		UserName string `json:"username"`
+	}
 	GetUserResponse struct {
 		Email    string `json:"email"`
 		Status   string `json:"status"`
@@ -68,6 +71,9 @@ type (
 	CloseResponse struct {
 		Ok string `json:"ok"`
 	}
+	GetIdResponse struct {
+		Id string `json:"id"`
+	}
 )
 
 // Funciones que nos permites codificar/decodificar los JSON
@@ -85,6 +91,16 @@ func decodeUserReq(ctx context.Context, r *http.Request) (interface{}, error) {
 	return req, nil
 }
 
+func decodeIdReq(ctx context.Context, r *http.Request) (interface{}, error) {
+	var req GetIdRequest
+	vars := mux.Vars(r)
+
+	req = GetIdRequest{
+		UserName: vars["username"],
+	}
+	return req, nil
+}
+
 // Crea la interface a partir de la respuesta del servidor
 func decodeEmailReq(ctx context.Context, r *http.Request) (interface{}, error) {
 	var req GetUserRequest
@@ -95,6 +111,7 @@ func decodeEmailReq(ctx context.Context, r *http.Request) (interface{}, error) {
 	}
 	return req, nil
 }
+
 func decodeUsersReq(ctx context.Context, r *http.Request) (interface{}, error) {
 	var req GetUsersRequest = GetUsersRequest{}
 	return req, nil

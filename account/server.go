@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+
 	"time"
 
 	httptransport "github.com/go-kit/kit/transport/http"
@@ -22,18 +23,24 @@ var cache store.Cache
 func NewHTTPServer(ctx context.Context, endpoints Endpoints) http.Handler {
 	setupGoGuardian()
 	r := mux.NewRouter()
-	miscR := r.PathPrefix("/other").Subrouter()
-	//r.Use(commonMiddleware)
+	//quizas sea nesecario crear otro subrouter para las demas funciones, ya usando el middleware normal
+	//miscR := r.PathPrefix("/other").Subrouter()
+	//miscR.Use(commonMiddleware)
+	r.Use(commonMiddleware)
 
-	miscR.Use(commonMiddleware)
-
-	miscR.Methods("GET").Path("/user/{id}").Handler(httptransport.NewServer(
+	r.Methods("GET").Path("/user/{id}").Handler(httptransport.NewServer(
 		endpoints.GetUser,
 		decodeEmailReq,
 		encodeResponse,
 	))
 
-	miscR.Methods("GET").Path("/users").Handler(httptransport.NewServer(
+	r.Methods("GET").Path("/getid/{username}").Handler(httptransport.NewServer(
+		endpoints.GetId,
+		decodeIdReq,
+		encodeResponse,
+	))
+
+	r.Methods("GET").Path("/users").Handler(httptransport.NewServer(
 		endpoints.GetUsers,
 		decodeUsersReq,
 		encodeResponse,
@@ -56,21 +63,40 @@ func NewHTTPServer(ctx context.Context, endpoints Endpoints) http.Handler {
 		decodeValidateTokenReq,
 		encodeResponse,
 	))
-
-	loginR := r.Methods(http.MethodPost).Subrouter()
-	loginR.Use(PostMiddleware)
-
-	loginR.Methods("POST").Path("/newuser").Handler(httptransport.NewServer(
+	//eliminar estos 2
+	r.Methods("POST").Path("/newuser").Handler(httptransport.NewServer(
 		endpoints.CreateUser,
 		decodeUserReq,
 		encodeResponse,
 	))
 
-	loginR.Methods("PUT").Path("/auth").Handler(httptransport.NewServer(
+	r.Methods("PUT").Path("/auth").Handler(httptransport.NewServer(
 		endpoints.ValidateUser,
 		decodeValidateReq,
 		encodeResponse,
 	))
+
+	//*****************************************************************//
+	//Descomentar estos 2 metodos
+	/*
+
+		//Mirar bien como usar 2 middlewares diferentes
+
+		loginR := r.Methods(http.MethodPost).Subrouter()
+
+		loginR.Use(PostMiddleware)
+
+		loginR.Methods("POST").Path("/newuser").Handler(httptransport.NewServer(
+			endpoints.CreateUser,
+			decodeUserReq,
+			encodeResponse,
+		))
+
+		loginR.Methods("PUT").Path("/auth").Handler(httptransport.NewServer(
+			endpoints.ValidateUser,
+			decodeValidateReq,
+			encodeResponse,
+		))*/
 
 	return r
 
@@ -99,8 +125,9 @@ func PostMiddleware(next http.Handler) http.Handler {
 		next.ServeHTTP(w, r)
 	})
 }
-
 func setupGoGuardian() {
+	//****************************Mirar bien la config del ldap
+	//****************************Yo cambie los dns del ldap en el docker compose. entonces mirar eso
 	cfg := &ldap.Config{
 		//cn=admin,dc=arqsoft,dc=unal,dc=edu,dc=co
 		BaseDN:       "dc=unstream",                       //"dc=example,dc=com",
