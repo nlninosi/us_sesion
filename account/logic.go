@@ -33,7 +33,9 @@ func (s service) CreateUser(ctx context.Context, email string, password string, 
 	uuid, _ := uuid.NewV4()
 	id := uuid.String()
 	//forja del token
-	token, err := getSignedToken()
+	//number, err := strconv.ParseUint(string(id), 10, 64)
+	token, err := jwt.CreateToken(id, "")
+
 	if err != nil {
 		level.Error(logger).Log("err", err)
 		return "", err
@@ -105,7 +107,7 @@ func (s service) GetUsers(ctx context.Context) (string, string, string, string, 
 func (s service) ValidateUser(ctx context.Context, email string, password string) (string, error) {
 	logger := log.With(s.logger, "method", "ValidateUser")
 
-	upassword, err := s.repository.ValidateUser(ctx, email)
+	username, upassword, err := s.repository.ValidateUser(ctx, email)
 
 	if err != nil {
 		level.Error(logger).Log("err", err)
@@ -113,17 +115,17 @@ func (s service) ValidateUser(ctx context.Context, email string, password string
 	}
 
 	if upassword == password {
-		tokenString, err := getSignedToken()
+		token, err := jwt.CreateToken("", username)
 		if err != nil {
 			level.Error(logger).Log("err", err)
 			return "", err
 		}
-		ok, err := s.repository.UpdateToken(ctx, email, tokenString)
+		ok, err := s.repository.UpdateToken(ctx, email, token)
 		if err != nil {
 			level.Error(logger).Log("err", err)
 			return ok, err
 		}
-		return tokenString, nil
+		return token, nil
 	} else {
 		return "Incorrect Password", nil
 	}
@@ -132,35 +134,40 @@ func (s service) ValidateUser(ctx context.Context, email string, password string
 func (s service) ValidateToken(ctx context.Context, email string, token string) (string, error) {
 	logger := log.With(s.logger, "method", "ValidateToken")
 	logger.Log("token", token)
-	check, err := jwt.ValidateToken(token, "S0m3_R4n90m_sss")
+	check, err := jwt.ExtractTokenMetadata(token)
 	if err != nil {
 		level.Error(logger).Log("err", err)
 		return "badrequest", err
 	}
-	if check {
-		oldToken, err := s.repository.ValidateToken(ctx, email)
-		if err != nil {
-			level.Error(logger).Log("err", err)
-			return "Invalid Token", err
-		}
-		if token == oldToken {
-			newToken, err := getSignedToken()
+	/*
+		if check {
+			oldToken, err := s.repository.ValidateToken(ctx, email)
 			if err != nil {
 				level.Error(logger).Log("err", err)
-				return "not valid token", err
+				return "Invalid Token", err
 			}
-			ok, err := s.repository.UpdateToken(ctx, email, newToken)
-			if err != nil {
-				level.Error(logger).Log("err", err)
-				return ok, err
+			if token == oldToken {
+				newToken, err := getSignedToken()
+				if err != nil {
+					level.Error(logger).Log("err", err)
+					return "not valid token", err
+				}
+				ok, err := s.repository.UpdateToken(ctx, email, newToken)
+				if err != nil {
+					level.Error(logger).Log("err", err)
+					return ok, err
+				}
+				return newToken, nil
+			} else {
+				return "bad Token", nil
 			}
-			return newToken, nil
 		} else {
 			return "bad Token", nil
-		}
-	} else {
-		return "bad Token", nil
-	}
+		}*/
+	//RefreshToken, err := jwt.CreateToken("new", "")
+
+	//RefreshToken, err := jwt.CreateToken("new", "")
+	return check, nil
 }
 func (s service) NewPassword(ctx context.Context, email string, password string, repassword string) (string, error) {
 	logger := log.With(s.logger, "method", "GetUser")

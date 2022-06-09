@@ -119,14 +119,19 @@ func (repo *repo) GetUsers(ctx context.Context) ([5]string, error) {
 // Aqui obtenemos la contrase;a
 // metodo inseguro
 // implementar hashes
-func (repo *repo) ValidateUser(ctx context.Context, email string) (string, error) {
+func (repo *repo) ValidateUser(ctx context.Context, email string) (string, string, error) {
 	var password string
+	var username string
 	err := repo.db.QueryRow("SELECT password FROM users WHERE email=$1", email).Scan(&password)
 	if err != nil {
-		return "", nil
+		return "", "", nil
+	}
+	err1 := repo.db.QueryRow("SELECT username FROM users WHERE email=$1", email).Scan(&username)
+	if err1 != nil {
+		return "", "", nil
 	}
 
-	return password, nil
+	return username, password, nil
 }
 
 func (repo *repo) NewPassword(ctx context.Context, email string, newpassword string) (string, error) {
