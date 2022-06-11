@@ -89,13 +89,14 @@ func ValidateToken(token string, secret string) (bool, error) {
 	return true, nil
 }
 
-func CreateToken(userid string, username string) (string, error) {
+func CreateToken(userid string, username string, email string) (string, error) {
 	var err error
 	//Creating Access Token
 	os.Setenv("ACCESS_SECRET", "jdnfksdmfksd") //this should be in an env file
 	atClaims := jwt.MapClaims{}
 	atClaims["username"] = username
 	atClaims["user_id"] = userid
+	atClaims["user_email"] = email
 	atClaims["exp"] = time.Now().Add(time.Minute * 240).Unix()
 	at := jwt.NewWithClaims(jwt.SigningMethodHS256, atClaims)
 	token, err := at.SignedString([]byte(os.Getenv("ACCESS_SECRET")))
@@ -143,7 +144,11 @@ func ExtractTokenMetadata(tokenString string) (string, error) {
 		if !ok {
 			return "", err
 		}
-		RefreshToken, err := CreateToken(userId, userName)
+		userEmail, ok := claims["user_email"].(string)
+		if !ok {
+			return "", err
+		}
+		RefreshToken, err := CreateToken(userId, userName, userEmail)
 		if err != nil {
 			return "BadRequest", err
 		}

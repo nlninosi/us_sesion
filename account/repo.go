@@ -36,16 +36,21 @@ func (repo *repo) CreateUser(ctx context.Context, user User) error {
 	var existusername string
 	err1 := repo.db.QueryRow("SELECT email FROM users WHERE email = $1", user.Email).Scan(&existemail)
 	err2 := repo.db.QueryRow("SELECT username FROM users WHERE username = $1", user.UserName).Scan(&existusername)
+	var RepoErr_empty = errors.New("Existen campos sin rellenar")
 	if user.Email == "" || user.Password == "" || user.UserName == "" {
-		return RepoErr
+		return RepoErr_empty
+
 	}
-	//var RepoErrRep = errors.New("aja")
-	if existemail != "" || existusername != "" {
-		return RepoErr
+	var RepoErr_email = errors.New("Ya existe una cuenta con el email ingresado")
+	var RepoErr_username = errors.New("Ya existe una cuenta con el nombre de usuario ingresado")
+	if existemail != "" {
+		return RepoErr_email
 	}
-	// ******* agregar mas reglas de negocio ************
-	if err1 != nil && err2 != nil {
-		//return RepoErrRep
+	if existusername != "" {
+		return RepoErr_username
+	}
+	if err1 == nil && err2 == nil {
+		return RepoErr
 	}
 
 	//***************************************************
@@ -119,26 +124,33 @@ func (repo *repo) GetUsers(ctx context.Context) ([5]string, error) {
 // Aqui obtenemos la contrase;a
 // metodo inseguro
 // implementar hashes
-func (repo *repo) ValidateUser(ctx context.Context, email string) (string, string, error) {
+func (repo *repo) ValidateUser(ctx context.Context, email string) (string, string, string, error) {
+	var RepoErr_1 = errors.New("No se encuentra un usuario con el email ingresado")
+	//var RepoErr = errors.New("unable to handle Repository Request")
+	var userid string
 	var password string
 	var username string
 	err := repo.db.QueryRow("SELECT password FROM users WHERE email=$1", email).Scan(&password)
 	if err != nil {
-		return "", "", nil
+		return "", "", "", RepoErr_1
 	}
 	err1 := repo.db.QueryRow("SELECT username FROM users WHERE email=$1", email).Scan(&username)
 	if err1 != nil {
-		return "", "", nil
+		return "", "", "", nil
+	}
+	err2 := repo.db.QueryRow("SELECT id FROM users WHERE email=$1", email).Scan(&userid)
+	if err2 != nil {
+		return "", "", "", nil
 	}
 
-	return username, password, nil
+	return userid, username, password, nil
 }
 
 func (repo *repo) NewPassword(ctx context.Context, email string, newpassword string) (string, error) {
-
+	var RepoErr_2 = errors.New("No se encuentra un usuario con el email ingresado")
 	_, err := repo.db.ExecContext(ctx, "UPDATE users SET password = $1 WHERE email=$2", newpassword, email)
 	if err != nil {
-		return "BadRequest", nil
+		return "", RepoErr_2
 	}
 
 	return "password changed", nil

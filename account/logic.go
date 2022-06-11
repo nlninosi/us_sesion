@@ -3,8 +3,7 @@ package account
 
 import (
 	"context"
-	"fmt"
-	"time"
+	"errors"
 
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
@@ -34,7 +33,7 @@ func (s service) CreateUser(ctx context.Context, email string, password string, 
 	id := uuid.String()
 	//forja del token
 	//number, err := strconv.ParseUint(string(id), 10, 64)
-	token, err := jwt.CreateToken(id, "")
+	token, err := jwt.CreateToken(id, username, email)
 
 	if err != nil {
 		level.Error(logger).Log("err", err)
@@ -106,8 +105,8 @@ func (s service) GetUsers(ctx context.Context) (string, string, string, string, 
 
 func (s service) ValidateUser(ctx context.Context, email string, password string) (string, error) {
 	logger := log.With(s.logger, "method", "ValidateUser")
-
-	username, upassword, err := s.repository.ValidateUser(ctx, email)
+	var PasswordErr = errors.New("Contraseña Incorrecta")
+	id, username, upassword, err := s.repository.ValidateUser(ctx, email)
 
 	if err != nil {
 		level.Error(logger).Log("err", err)
@@ -115,7 +114,7 @@ func (s service) ValidateUser(ctx context.Context, email string, password string
 	}
 
 	if upassword == password {
-		token, err := jwt.CreateToken("", username)
+		token, err := jwt.CreateToken(id, username, email)
 		if err != nil {
 			level.Error(logger).Log("err", err)
 			return "", err
@@ -127,7 +126,7 @@ func (s service) ValidateUser(ctx context.Context, email string, password string
 		}
 		return token, nil
 	} else {
-		return "Incorrect Password", nil
+		return "", PasswordErr
 	}
 }
 
@@ -171,8 +170,9 @@ func (s service) ValidateToken(ctx context.Context, email string, token string) 
 }
 func (s service) NewPassword(ctx context.Context, email string, password string, repassword string) (string, error) {
 	logger := log.With(s.logger, "method", "GetUser")
+	var PasswordErr = errors.New("Las contraseñas ingresadas no son iguales")
 	if repassword != password {
-		return "Passwords dont match", nil
+		return "", PasswordErr
 	}
 	ok, err := s.repository.NewPassword(ctx, email, password)
 
@@ -192,6 +192,7 @@ func (s service) CloseSesion(ctx context.Context, ok string) (string, error) {
 	return " ", nil
 }
 
+/*
 func getSignedToken() (string, error) {
 	// we make a JWT Token here with signing method of ES256 and claims.
 	// claims are attributes.
@@ -222,3 +223,4 @@ func getSignedToken() (string, error) {
 	}
 	return tokenString, nil
 }
+*/
