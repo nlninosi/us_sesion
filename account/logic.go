@@ -4,9 +4,11 @@ package account
 import (
 	"context"
 	"errors"
+	"fmt"
 
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
+	"github.com/go-ldap/ldap/v3"
 	"github.com/gofrs/uuid"
 
 	"us_sesion_ms/account/jwt"
@@ -55,6 +57,17 @@ func (s service) CreateUser(ctx context.Context, email string, password string, 
 	}
 	logger.Log("user created", id)
 
+	ldapURL := "ldap://host.docker.internal:389/"
+	l, err := ldap.DialURL(ldapURL)
+	if err != nil {
+		level.Error(logger).Log("err", err)
+	}
+	defer l.Close()
+	err = l.Bind("cn=admin,dc=unstream,dc=com", "admin")
+	if err != nil {
+		level.Error(logger).Log("err", err)
+	}
+
 	return token, nil
 }
 
@@ -99,20 +112,51 @@ func (s service) GetUsers(ctx context.Context) (string, string, string, string, 
 		level.Error(logger).Log("err", err)
 		return "", "", "", "", "", err
 	}
-
 	return usernames[0], usernames[1], usernames[2], usernames[3], usernames[4], nil
 }
 
 func (s service) ValidateUser(ctx context.Context, email string, password string) (string, error) {
 	logger := log.With(s.logger, "method", "ValidateUser")
-	var PasswordErr = errors.New("Contraseña Incorrecta")
+	var PasswordErr = errors.New("contraseña Incorrecta")
+	//Accion del Repo
 	id, username, upassword, err := s.repository.ValidateUser(ctx, email)
-
 	if err != nil {
 		level.Error(logger).Log("err", err)
 		return "", err
 	}
 
+	//Primero contrastamos con el LDAP
+	ldapURL := "ldap://host.docker.internal:389/"
+	l, err := ldap.DialURL(ldapURL)
+	if err != nil {
+		level.Error(logger).Log("err", err)
+	}
+	defer l.Close()
+	err = l.Bind("cn=admin,dc=unstream,dc=com", "admin")
+	if err != nil {
+		level.Error(logger).Log("err", err)
+	}
+	baseDN := "DC=unstream,DC=com"
+	filter := fmt.Sprintf("(CN=%s)", ldap.EscapeFilter(username))
+	searchReq := ldap.NewSearchRequest(baseDN, ldap.ScopeWholeSubtree, 0, 0, 0, false, filter, []string{"sAMAccountName"}, []ldap.Control{})
+	result, err := l.Search(searchReq)
+	if err != nil {
+		level.Error(logger).Log("failed to query LDAP: %w", err)
+	}
+	fmt.Println("Got", len(result.Entries), "search results")
+	userdn := result.Entries[0].DN
+	fmt.Println(userdn)
+	err = l.Bind(userdn, password)
+	if err != nil {
+		level.Error(logger).Log("err", err)
+	} else {
+		fmt.Println("User Authenticaded")
+	}
+	err = l.Bind("cn=admin,dc=unstream,dc=com", "admin")
+	if err != nil {
+		level.Error(logger).Log("err", err)
+	}
+	//Luego con el repo
 	if upassword == password {
 		token, err := jwt.CreateToken(id, username, email)
 		if err != nil {
@@ -138,39 +182,11 @@ func (s service) ValidateToken(ctx context.Context, email string, token string) 
 		level.Error(logger).Log("err", err)
 		return "badrequest", err
 	}
-	/*
-		if check {
-			oldToken, err := s.repository.ValidateToken(ctx, email)
-			if err != nil {
-				level.Error(logger).Log("err", err)
-				return "Invalid Token", err
-			}
-			if token == oldToken {
-				newToken, err := getSignedToken()
-				if err != nil {
-					level.Error(logger).Log("err", err)
-					return "not valid token", err
-				}
-				ok, err := s.repository.UpdateToken(ctx, email, newToken)
-				if err != nil {
-					level.Error(logger).Log("err", err)
-					return ok, err
-				}
-				return newToken, nil
-			} else {
-				return "bad Token", nil
-			}
-		} else {
-			return "bad Token", nil
-		}*/
-	//RefreshToken, err := jwt.CreateToken("new", "")
-
-	//RefreshToken, err := jwt.CreateToken("new", "")
 	return check, nil
 }
 func (s service) NewPassword(ctx context.Context, email string, password string, repassword string) (string, error) {
 	logger := log.With(s.logger, "method", "GetUser")
-	var PasswordErr = errors.New("Las contraseñas ingresadas no son iguales")
+	var PasswordErr = errors.New("las contraseñas ingresadas no son iguales")
 	if repassword != password {
 		return "", PasswordErr
 	}
@@ -180,9 +196,6 @@ func (s service) NewPassword(ctx context.Context, email string, password string,
 		level.Error(logger).Log("err", err)
 		return "BadRequest", err
 	}
-
-	//logger.Log("Get user", id)
-
 	return ok, nil
 }
 func (s service) CloseSesion(ctx context.Context, ok string) (string, error) {
@@ -191,36 +204,3 @@ func (s service) CloseSesion(ctx context.Context, ok string) (string, error) {
 	logger.Log("Closed", ok)
 	return " ", nil
 }
-
-/*
-func getSignedToken() (string, error) {
-	// we make a JWT Token here with signing method of ES256 and claims.
-	// claims are attributes.
-	// aud - audience
-	// iss - issuer
-	// exp - expiration of the Token
-	// token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-	// 	"aud": "frontend.knowsearch.ml",
-	// 	"iss": "knowsearch.ml",
-	// 	"exp": string(time.Now().Add(time.Minute * 1).Unix()),
-	// })
-	claimsMap := map[string]string{
-		"aud": "frontend.knowsearch.ml",
-		"iss": "knowsearch.ml",
-		"exp": fmt.Sprint(time.Now().Add(time.Minute * 1).Unix()),
-	}
-	// here we provide the shared secret. It should be very complex.\
-	// Aslo, it should be passed as a System Environment variable
-
-	//	Esta key debe ser secreta
-	secret := "S0m3_R4n90m_sss"
-	//Implementar como variable de ambiente en docker
-
-	header := "HS256"
-	tokenString, err := jwt.GenerateToken(header, claimsMap, secret)
-	if err != nil {
-		return tokenString, err
-	}
-	return tokenString, nil
-}
-*/
