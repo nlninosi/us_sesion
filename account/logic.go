@@ -57,17 +57,6 @@ func (s service) CreateUser(ctx context.Context, email string, password string, 
 	}
 	logger.Log("user created", id)
 
-	ldapURL := "ldap://host.docker.internal:389/"
-	l, err := ldap.DialURL(ldapURL)
-	if err != nil {
-		level.Error(logger).Log("err", err)
-	}
-	defer l.Close()
-	err = l.Bind("cn=admin,dc=unstream,dc=com", "admin")
-	if err != nil {
-		level.Error(logger).Log("err", err)
-	}
-
 	return token, nil
 }
 

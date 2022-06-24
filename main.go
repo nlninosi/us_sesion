@@ -23,10 +23,10 @@ import (
 // puerto 5432
 
 const (
-	host     = "host.docker.internal"
+	host     = "35.230.43.15"
 	port     = 5432
 	user     = "postgres"
-	password = "mysecretpassword"
+	password = "1234"
 	dbname   = "postgres"
 )
 
